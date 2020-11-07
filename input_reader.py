@@ -4,6 +4,7 @@ import json
 with open(os.getcwd() + "/config.json") as file:
     data = json.load(file)
     excercise = data['EJ'].lower()
+    font = data['FONT']
 
 def get_json_data():
-    return [excercise]
+    return [excercise, font]
