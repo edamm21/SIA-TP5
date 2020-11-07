@@ -1,0 +1,16 @@
+from input_reader import get_json_data
+from Ej1.basic_autoencoder import BasicAutoencoder
+
+params = get_json_data()
+if params[0] == '1a':
+    # do something
+    ba = BasicAutoencoder()
+elif params[0] == '1b':
+    #do something
+    print("1b")
+elif params[0] == '2':
+    # do something
+    print("2")
+else:
+    print("Error seleccionando ejercicio")
+    exit()
