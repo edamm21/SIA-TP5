@@ -10,6 +10,13 @@ class BasicAutoencoder:
         self.alphabet = alphabet
         self.input_layer_size = len(alphabet[0]) # del tamaño de las entradas del "alfabeto"
         self.epochs = epochs
+        self.alpha = 0.05
+        self.beta = 0.5
+        self.V = []                     # Valor de los nodos [capa, índice]
+        self.W = []                     # Pesos [capa destino, nodo dest, nodo origen]
+        self.d = []                     # Error
+        self.total_layers = 0
+        self.nodes_per_layer = []
         self.build_network()
 
     """
@@ -19,43 +26,61 @@ class BasicAutoencoder:
                  Tengo 1 network => n layers => m nodos ==> [[[]]] triple lista
     """
     def build_network(self):
+        division_factor = 4
         initial_count = self.input_layer_size
         node_count = initial_count
-        self.network = []
-        self.total_layers = 0        
+
         while node_count > 2:
             self.total_layers += 2
-            node_count = math.floor(node_count / 4)
+            node_count = math.floor(node_count / division_factor)
         self.total_layers += 1
         self.nodes_per_layer = [0 for i in range(self.total_layers)]
         node_count = initial_count
         for i in range(math.floor(self.total_layers/2)):
-            print(node_count)
-            self.nodes_per_layer[i] = node_count + 1 # +1 por el bias 
-            self.nodes_per_layer[self.total_layers - 1 - i] = node_count + 1 # +1 por el bias 
-            node_count = math.floor(node_count / 4)
-        self.nodes_per_layer[math.floor(self.total_layers/2)] = 2
+            self.nodes_per_layer[i] = node_count + 1                            # +1 por el bias
+            self.nodes_per_layer[self.total_layers - 1 - i] = node_count + 1    # +1 por el bias
+            node_count = math.floor(node_count / division_factor)
+        self.nodes_per_layer[math.floor(self.total_layers/2)] = 3               # Dos de valor, uno para el bias
+        self.nodes_per_layer[-1] -= 1                                           # Capa de salida no lleva bias
         for i in range(self.total_layers):
-            self.network.append([0.0 for j in range(self.nodes_per_layer[i])]) 
+            print("Capa", i, ": ", self.nodes_per_layer[i], "Nodos")
+            self.V.append([0.0 for j in range(self.nodes_per_layer[i])])
         self.initialize_weights()
-        
-    
+
+
     """
         Weights: array de tamaño 1 menos que la cantidad de layers, y en cada posición tiene un array con la cantidad de
                  valores de la capa siguiente, osea, weights[0] tiene una cantidad de pesos igual a la capa[1] * capa[0] de la red.
                  Esos valores son aleatorios con distribución uniforme entre 0 y 1
     """
     def initialize_weights(self):
-        self.weights = [None for i in range(self.total_layers - 1)]
-        for i in range(len(self.nodes_per_layer) - 1):
-            self.weights[i] = [random.uniform(0, 1) for j in range(self.nodes_per_layer[i+1] * self.nodes_per_layer[i] + 1)] 
+        self.W = []
+        self.W.append(np.random.rand(0,0))
+        self.M = self.total_layers - 1
+        for i in range(1, self.M):
+            self.V[i][0] = 1                # Bias para cada capa
+        for layer in range(self.M):
+            w = np.random.rand(self.nodes_per_layer[layer+1], self.nodes_per_layer[layer]) - 0.5
+            self.W.append(w)
+        print(self.W)
+        print("\n")
 
-    def activate(self, x):
+    """
+    def g(self, x):
         # ReLu
         return math.log(1.0 + math.exp(x))
-    
-    def derivative(self, x):
+
+    def g_derivative(self, x):
         return 1.0 / (1.0 + math.exp(x))
+    """
+
+    def g(self, x):
+        return np.tanh(self.beta * x)
+
+    def g_derivative(self, x):
+        cosh2 = (np.cosh(self.beta*x)) ** 2
+        return self.beta / cosh2
+
 
     def get_sum(self, neurons, weights, amount, index):
         sum_ = 0.0
@@ -64,20 +89,64 @@ class BasicAutoencoder:
             sum_ += neurons[i] * weights[index * amount + i]
         return sum_
 
+    def h(self, m, i, amount_of_nodes, W, V):
+        hmi = 0
+        for j in range(0, amount_of_nodes):
+            hmi += W[m][i][j] * V[m-1][j]
+        return hmi
+
     def train(self):
+        #self.initialize_weights()
         data = self.alphabet
+        self.M = self.total_layers - 1
+        for layer in range(self.total_layers):
+            self.d.append(np.zeros(self.nodes_per_layer[layer]))
+        for i in range(1, self.M):
+            self.V[i][0] = 1                 # Bias para cada capa
+
         for epoch in range(self.epochs):
+            total_error = 0
+            worst_error_this_epoch = 0
+            positives = 0
+            negatives = 0
+
+            # TO DO: Randomize W every once in a while?
+
             np.random.shuffle(data)
-            for input_ in data:
-                
-                # get input data into network's first layer
-                for m in range(len(input_)):
-                    self.network[0][m] = input_[m]
-                self.network[0][len(input_)] = 1.0 # bias
-                
-                # Feeding forward to network
-                for layer in range(self.total_layers - 1): 
-                    for neuron in range(self.nodes_per_layer[layer + 1]): 
-                        sum_ = self.get_sum(self.network[layer], self.weights[layer], self.nodes_per_layer[layer], neuron)
-                        self.network[layer + 1][neuron] = self.activate(sum_)
-                
+            for mu in range(len(data)):
+                # Paso 2 (V0 tiene los ejemplos iniciales)
+                self.V[0][0] = 1.0  # bias
+                for k in range(len(data[0])):
+                    self.V[0][k+1] = data[mu][k]
+
+                # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m)
+                for m in range(1, self.M+1):
+                    for i in range(1, self.nodes_per_layer[m]):
+                        hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
+                        self.V[m][i] = self.g(hmi)
+
+                # Paso 4 (Calculo error para capa de salida M)
+                for i in range(0, self.nodes_per_layer[self.M]):
+                    hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
+                    self.d[self.M][i] = self.g_derivative(hMi)*(data[mu][i] - self.V[self.M][i])
+
+                # Paso 5 (Retropropagar error)
+                for m in range(self.M, 1, -1):                                           # m es la capa superior
+                    for i in range(0, self.nodes_per_layer[m-1]):
+                        hprevmi = self.h(m-1, i, self.nodes_per_layer[m-2], self.W, self.V)
+                        error_sum = 0
+                        for j in range(0, self.nodes_per_layer[m]):                        # Por cada nodo en la capa superior
+                            error_sum += self.W[m][j][i] * self.d[m][j]                    # sumo la rama de aca hasta arriba y multiplico por el error
+                        self.d[m-1][i] = self.g_derivative(hprevmi) * error_sum
+
+                # Paso 6 (Actualizar pesos)
+                for m in range(1, self.M+1):
+                    for i in range(self.nodes_per_layer[m]):
+                        for j in range(self.nodes_per_layer[m-1]):
+                            delta = self.alpha * self.d[m][i] * self.V[m-1][j]
+                            self.W[m][i][j] = self.W[m][i][j] + delta
+        print(self.V[0][1:])
+        print(self.V[-1])
+        print("\n")
+        print("Error:")
+        print(abs(np.array(self.V[0][1:]) - np.array(self.V[-1])))
