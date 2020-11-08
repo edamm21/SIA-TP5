@@ -130,7 +130,6 @@ def create_alphabet(font):
                alphabet[character_count][i * cols + j] = 1.0
             else:
                alphabet[character_count][i * cols + j] = 0.0
-   print(alphabet)
    return alphabet
                
 
