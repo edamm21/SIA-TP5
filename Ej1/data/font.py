@@ -129,9 +129,9 @@ def create_alphabet(font):
             if (font[character_count][i] & (mask >> j)) > 0:
                alphabet[character_count][i * cols + j] = 1.0
             else:
-               alphabet[character_count][i * cols + j] = 0.0
+               alphabet[character_count][i * cols + j] = -1.0
    return alphabet
-               
+
 
 def get_font(number):
    if number == 1:

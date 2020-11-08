@@ -57,13 +57,11 @@ class BasicAutoencoder:
         self.W = []
         self.W.append(np.random.rand(0,0))
         self.M = self.total_layers - 1
-        for i in range(1, self.M):
+        for i in range(0, self.M):
             self.V[i][0] = 1                # Bias para cada capa
         for layer in range(self.M):
             w = np.random.rand(self.nodes_per_layer[layer+1], self.nodes_per_layer[layer]) - 0.5
             self.W.append(w)
-        print(self.W)
-        print("\n")
 
     """
     def g(self, x):
@@ -119,11 +117,16 @@ class BasicAutoencoder:
                 for k in range(len(data[0])):
                     self.V[0][k+1] = data[mu][k]
 
-                # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m)
-                for m in range(1, self.M+1):
+                # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m. Salteo el nodo bias)
+                for m in range(1, self.M):
                     for i in range(1, self.nodes_per_layer[m]):
                         hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
                         self.V[m][i] = self.g(hmi)
+
+                # Paso 3B (En la ultima capa no hay nodo bias)
+                for i in range(self.nodes_per_layer[self.M]):
+                    hmi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
+                    self.V[self.M][i] = self.g(hmi)
 
                 # Paso 4 (Calculo error para capa de salida M)
                 for i in range(0, self.nodes_per_layer[self.M]):
@@ -145,8 +148,8 @@ class BasicAutoencoder:
                         for j in range(self.nodes_per_layer[m-1]):
                             delta = self.alpha * self.d[m][i] * self.V[m-1][j]
                             self.W[m][i][j] = self.W[m][i][j] + delta
-        print(self.V[0][1:])
-        print(self.V[-1])
+        print("Input: ", self.V[0][1:])
+        print("Output: ", self.V[-1])
         print("\n")
         print("Error:")
         print(abs(np.array(self.V[0][1:]) - np.array(self.V[-1])))
