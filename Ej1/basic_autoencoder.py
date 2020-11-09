@@ -10,7 +10,7 @@ class BasicAutoencoder:
         self.alphabet = alphabet
         self.input_layer_size = len(alphabet[0]) # del tamaño de las entradas del "alfabeto"
         self.epochs = epochs
-        self.alpha = 0.05
+        self.alpha = 0.01
         self.beta = 0.5
         self.V = []                     # Valor de los nodos [capa, índice]
         self.W = []                     # Pesos [capa destino, nodo dest, nodo origen]
@@ -26,7 +26,7 @@ class BasicAutoencoder:
                  Tengo 1 network => n layers => m nodos ==> [[[]]] triple lista
     """
     def build_network(self):
-        division_factor = 4
+        division_factor = 2
         initial_count = self.input_layer_size
         node_count = initial_count
 
@@ -103,13 +103,6 @@ class BasicAutoencoder:
             self.V[i][0] = 1                 # Bias para cada capa
 
         for epoch in range(self.epochs):
-            total_error = 0
-            worst_error_this_epoch = 0
-            positives = 0
-            negatives = 0
-
-            # TO DO: Randomize W every once in a while?
-
             np.random.shuffle(data)
             for mu in range(len(data)):
                 # Paso 2 (V0 tiene los ejemplos iniciales)
@@ -148,8 +141,38 @@ class BasicAutoencoder:
                         for j in range(self.nodes_per_layer[m-1]):
                             delta = self.alpha * self.d[m][i] * self.V[m-1][j]
                             self.W[m][i][j] = self.W[m][i][j] + delta
+        # Show what the error was for the last letter used to train
         print("Input: ", self.V[0][1:])
         print("Output: ", self.V[-1])
         print("\n")
         print("Error:")
         print(abs(np.array(self.V[0][1:]) - np.array(self.V[-1])))
+
+    def test(self, test_data):
+        print("\n\nExpectation / Reality")
+        self.M = self.total_layers - 1
+        for input in test_data:
+            print("\n\n")
+            for k in range(len(input)):
+                self.V[0][k+1] = input[k]
+            for m in range(1, self.M):
+                for i in range(1, self.nodes_per_layer[m]):
+                    hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
+                    self.V[m][i] = self.g(hmi)
+            for i in range(0, self.nodes_per_layer[self.M]):
+                hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
+                self.V[self.M][i] = self.g(hMi)
+            perceptron_output = self.V[self.M]
+            for bit in range(len(perceptron_output)):
+                if(perceptron_output[bit] > 0): perceptron_output[bit] = 1
+                else: perceptron_output[bit] = -1
+            #Print the original letter
+            for j in range(7):
+                for i in range(5):
+                    if(input[i+j*5] > 0): print("X", end = "")
+                    else: print(".", end = "")
+                print("\t", end="")
+                for i in range(5):
+                    if(perceptron_output[i+j*5] > 0): print("X", end = "")
+                    else: print(".", end = "")
+                print("")

@@ -5,8 +5,10 @@ from Ej1.basic_autoencoder import BasicAutoencoder
 params = get_json_data()
 if params[0] == '1a':
     font = get_font(params[1])
-    ba = BasicAutoencoder(font, 2500)
+    ba = BasicAutoencoder(font, 1000)
     ba.train()
+    font = get_font(params[1])
+    ba.test(font)
 elif params[0] == '1b':
     #do something
     print("1b")
