@@ -35,6 +35,10 @@ font1 = [
    [0x08, 0x04, 0x02, 0x01, 0x02, 0x04, 0x08],   # 0x3e, >
    [0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04]]   # 0x3f, ?
 
+symbols1 = [
+   ' ', '!', '\"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?']
+
 font2 = [
    [0x0e, 0x11, 0x17, 0x15, 0x17, 0x10, 0x0f],   # 0x40, @
    [0x04, 0x0a, 0x11, 0x11, 0x1f, 0x11, 0x11],   # 0x41, A
@@ -69,6 +73,9 @@ font2 = [
    [0x04, 0x0a, 0x11, 0x00, 0x00, 0x00, 0x00],   # 0x5e, ^
    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f]]   # 0x5f, _
 
+symbols2 = [
+    '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_']
 
 font3 = [
    [0x04, 0x04, 0x02, 0x00, 0x00, 0x00, 0x00],   # 0x60, `
@@ -104,6 +111,10 @@ font3 = [
    [0x08, 0x15, 0x02, 0x00, 0x00, 0x00, 0x00],   # 0x7e, ~
    [0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]]   # 0x7f, DEL
 
+symbols3 = [
+  '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+  'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '[', '|', ']', '~', 'DEL']
+
 rows = 7
 cols = 5
 
@@ -112,9 +123,9 @@ def print_letters(alphabet):
       for row in range(rows):
          row_str = '';
          for col in range(cols):
-            if alphabet[i][row * cols + col] > 0.0: 
+            if alphabet[i][row * cols + col] > 0.0:
                row_str = row_str + '*'
-            else: 
+            else:
                row_str = row_str + ' '
          print(row_str)
       print('--------------')
@@ -135,8 +146,8 @@ def create_alphabet(font):
 
 def get_font(number):
    if number == 1:
-      return create_alphabet(font1)
+      return create_alphabet(font1), symbols1
    elif number == 2:
-      return create_alphabet(font2)
+      return create_alphabet(font2), symbols2
    else:
-      return create_alphabet(font3)
+      return create_alphabet(font3), symbols3

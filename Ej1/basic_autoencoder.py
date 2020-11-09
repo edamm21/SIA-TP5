@@ -3,6 +3,7 @@ from Ej1.multi_layer_perceptron import MultiLayerPerceptron
 import math
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 class BasicAutoencoder:
 
@@ -141,12 +142,14 @@ class BasicAutoencoder:
                         for j in range(self.nodes_per_layer[m-1]):
                             delta = self.alpha * self.d[m][i] * self.V[m-1][j]
                             self.W[m][i][j] = self.W[m][i][j] + delta
-        # Show what the error was for the last letter used to train
+        # Show what the error was for the last letter used to train:
+        """
         print("Input: ", self.V[0][1:])
         print("Output: ", self.V[-1])
         print("\n")
         print("Error:")
         print(abs(np.array(self.V[0][1:]) - np.array(self.V[-1])))
+        """
 
     def test(self, test_data):
         print("\n\nExpectation / Reality")
@@ -176,3 +179,25 @@ class BasicAutoencoder:
                     if(perceptron_output[i+j*5] > 0): print("X", end = "")
                     else: print(".", end = "")
                 print("")
+
+    def graph(self, data, data_labels):
+        self.M = self.total_layers - 1
+        index = 0
+        for input in data:
+            for k in range(len(input)):
+                self.V[0][k+1] = input[k]
+            for m in range(1, self.M):
+                for i in range(1, self.nodes_per_layer[m]):
+                    hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
+                    self.V[m][i] = self.g(hmi)
+            for i in range(0, self.nodes_per_layer[self.M]):
+                hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
+                self.V[self.M][i] = self.g(hMi)
+            perceptron_output = self.V[self.M]
+            x = self.V[math.floor(self.total_layers/2)][1]
+            y = self.V[math.floor(self.total_layers/2)][2]
+            plt.scatter(x, y)
+            plt.annotate(data_labels[index], xy=(x,y), textcoords='data')
+            index += 1
+        plt.grid()
+        plt.show()
