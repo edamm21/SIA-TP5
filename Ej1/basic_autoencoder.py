@@ -4,11 +4,16 @@ import math
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+import pandas as pd
+import statistics
 
 class BasicAutoencoder:
 
-    def __init__(self, alphabet, epochs=1):
+    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5):
         self.alphabet = alphabet
+        self.noise_probability = probability
+        self.denoising = denoising
         self.input_layer_size = len(alphabet[0]) # del tamaño de las entradas del "alfabeto"
         self.epochs = epochs
         self.alpha = 0.01
@@ -64,6 +69,13 @@ class BasicAutoencoder:
             w = np.random.rand(self.nodes_per_layer[layer+1], self.nodes_per_layer[layer]) - 0.5
             self.W.append(w)
 
+    def generate_noise(self, input_data):
+        data = input_data
+        p = random.uniform(0, 1)
+        if p < self.noise_probability:
+            data = 1.0 if data == -1.0 else -1.0
+        return data
+
     """
     def g(self, x):
         # ReLu
@@ -109,8 +121,8 @@ class BasicAutoencoder:
                 # Paso 2 (V0 tiene los ejemplos iniciales)
                 self.V[0][0] = 1.0  # bias
                 for k in range(len(data[0])):
-                    self.V[0][k+1] = data[mu][k]
-
+                    self.V[0][k+1] = data[mu][k] if not self.denoising else self.generate_noise(data[mu][k])
+                
                 # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m. Salteo el nodo bias)
                 for m in range(1, self.M):
                     for i in range(1, self.nodes_per_layer[m]):
@@ -180,9 +192,32 @@ class BasicAutoencoder:
                     else: print(".", end = "")
                 print("")
 
+    def pre_process(self, grid):
+        normalized_columns = []
+        for i in range(len(grid[0])):
+            entire_col = [row[i] for row in grid]
+            media = sum(entire_col) / len(entire_col)
+            std = statistics.stdev(entire_col)
+            normalized_column = [(value - media) / std for value in entire_col]
+            normalized_columns.append(normalized_column)
+        array = np.array([np.array(xi) for xi in normalized_columns])
+        array = array.transpose()
+        return list(array)
+
+    def get_pca(self):
+        data = self.alphabet
+        standarized = pd.DataFrame(data=data)
+        correlations = standarized.corr()
+        eigen_values_s, eigen_vectors_s = np.linalg.eig(correlations)
+        pca = PCA()
+        main_c = pca.fit_transform(standarized)
+        
+        print(main_c)  # chequear bien dsp
+
     def graph(self, data, data_labels):
         self.M = self.total_layers - 1
         index = 0
+        latent_values = [[None, None] for i in range(len(data))]
         for input in data:
             for k in range(len(input)):
                 self.V[0][k+1] = input[k]
@@ -196,8 +231,11 @@ class BasicAutoencoder:
             perceptron_output = self.V[self.M]
             x = self.V[math.floor(self.total_layers/2)][1]
             y = self.V[math.floor(self.total_layers/2)][2]
+            latent_values[index] = [x, y]
             plt.scatter(x, y)
             plt.annotate(data_labels[index], xy=(x,y), textcoords='data')
             index += 1
+        #print(latent_values)
+        #self.get_pca()
         plt.grid()
         plt.show()
