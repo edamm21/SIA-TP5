@@ -1,7 +1,8 @@
 from Ej1.data.font import create_alphabet
-from Ej1.multi_layer_perceptron import MultiLayerPerceptron
+from datetime import datetime, timedelta
 import math
 import random
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
@@ -32,7 +33,7 @@ class BasicAutoencoder:
                  Tengo 1 network => n layers => m nodos ==> [[[]]] triple lista
     """
     def build_network(self):
-        division_factor = 4
+        division_factor = 3.4
         initial_count = self.input_layer_size
         node_count = initial_count
 
@@ -106,15 +107,20 @@ class BasicAutoencoder:
             hmi += W[m][i][j] * V[m-1][j]
         return hmi
 
-    def progressive_train(self):
-        #for width in range(len(self.alphabet)):
-        for width in range(20):
+    def progressive_train(self, leaps, time_limit):
+        good_weights = []
+        for width in range(0, len(self.alphabet), leaps):
             data = self.alphabet[0:width+1]
-            error = self.train(data, 500)
-            print("Con ", width+1, "letras, tarda ", len(error), "épocas")
+            error = self.train(data, time_limit)
+            if (len(error) > 0 and error[-1] == 0):
+                print("Con ", width+1, "letras, tarda ", len(error), "épocas. ", datetime.now())
+                good_weights = copy.deepcopy(self.W)
+            else:
+                self.W = good_weights
+                print("Solo pude aprender ", width-leaps+1, " letras.", datetime.now())
+                return
 
-    def train(self, training_set, epochs):
-        #self.initialize_weights()
+    def train(self, training_set, time_limit):
         print("My alphabet is of size ", len(training_set))
         error_over_time = []
         data = training_set
@@ -127,7 +133,8 @@ class BasicAutoencoder:
         epoch = 0
         current_error = 1
         #for epoch in range(epochs):
-        while current_error != 0:
+        start_time = datetime.now()
+        while current_error != 0 and datetime.now()-start_time < timedelta(minutes=time_limit):
             epoch += 1
             current_error = 0
             np.random.shuffle(data)

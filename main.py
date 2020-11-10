@@ -6,7 +6,7 @@ params = get_json_data()
 if params[0] == '1a':
     font, symbols = get_font(params[1])
     ba = BasicAutoencoder(font, 500, denoising=False, probability=params[2])
-    ba.progressive_train()
+    ba.progressive_train(2, 5)
     font, symbols = get_font(params[1])
     ba.graph(font, symbols)
     ba.test(font)
