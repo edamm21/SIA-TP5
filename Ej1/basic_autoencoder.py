@@ -16,7 +16,7 @@ class BasicAutoencoder:
         self.denoising = denoising
         self.input_layer_size = len(alphabet[0]) # del tamaño de las entradas del "alfabeto"
         self.epochs = epochs
-        self.alpha = 0.01
+        self.alpha = 0.05
         self.beta = 0.5
         self.V = []                     # Valor de los nodos [capa, índice]
         self.W = []                     # Pesos [capa destino, nodo dest, nodo origen]
@@ -32,7 +32,7 @@ class BasicAutoencoder:
                  Tengo 1 network => n layers => m nodos ==> [[[]]] triple lista
     """
     def build_network(self):
-        division_factor = 2
+        division_factor = 4
         initial_count = self.input_layer_size
         node_count = initial_count
 
@@ -106,23 +106,37 @@ class BasicAutoencoder:
             hmi += W[m][i][j] * V[m-1][j]
         return hmi
 
-    def train(self):
+    def progressive_train(self):
+        #for width in range(len(self.alphabet)):
+        for width in range(20):
+            data = self.alphabet[0:width+1]
+            error = self.train(data, 500)
+            print("Con ", width+1, "letras, tarda ", len(error), "épocas")
+
+    def train(self, training_set, epochs):
         #self.initialize_weights()
-        data = self.alphabet
+        print("My alphabet is of size ", len(training_set))
+        error_over_time = []
+        data = training_set
         self.M = self.total_layers - 1
+        #Initialize d and bias nodes
         for layer in range(self.total_layers):
             self.d.append(np.zeros(self.nodes_per_layer[layer]))
         for i in range(1, self.M):
             self.V[i][0] = 1                 # Bias para cada capa
-
-        for epoch in range(self.epochs):
+        epoch = 0
+        current_error = 1
+        #for epoch in range(epochs):
+        while current_error != 0:
+            epoch += 1
+            current_error = 0
             np.random.shuffle(data)
             for mu in range(len(data)):
                 # Paso 2 (V0 tiene los ejemplos iniciales)
                 self.V[0][0] = 1.0  # bias
                 for k in range(len(data[0])):
                     self.V[0][k+1] = data[mu][k] if not self.denoising else self.generate_noise(data[mu][k])
-                
+
                 # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m. Salteo el nodo bias)
                 for m in range(1, self.M):
                     for i in range(1, self.nodes_per_layer[m]):
@@ -135,7 +149,11 @@ class BasicAutoencoder:
                     self.V[self.M][i] = self.g(hmi)
 
                 # Paso 4 (Calculo error para capa de salida M)
+                result = self.V[self.M]
                 for i in range(0, self.nodes_per_layer[self.M]):
+                    result[i] = np.sign(result[i])
+                    if data[mu][i] != result[i]:
+                        current_error += 1
                     hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
                     self.d[self.M][i] = self.g_derivative(hMi)*(data[mu][i] - self.V[self.M][i])
 
@@ -154,14 +172,8 @@ class BasicAutoencoder:
                         for j in range(self.nodes_per_layer[m-1]):
                             delta = self.alpha * self.d[m][i] * self.V[m-1][j]
                             self.W[m][i][j] = self.W[m][i][j] + delta
-        # Show what the error was for the last letter used to train:
-        """
-        print("Input: ", self.V[0][1:])
-        print("Output: ", self.V[-1])
-        print("\n")
-        print("Error:")
-        print(abs(np.array(self.V[0][1:]) - np.array(self.V[-1])))
-        """
+            error_over_time.append(current_error)
+        return error_over_time
 
     def test(self, test_data):
         print("\n\nExpectation / Reality")
@@ -211,7 +223,7 @@ class BasicAutoencoder:
         eigen_values_s, eigen_vectors_s = np.linalg.eig(correlations)
         pca = PCA()
         main_c = pca.fit_transform(standarized)
-        
+
         print(main_c)  # chequear bien dsp
 
     def graph(self, data, data_labels):
