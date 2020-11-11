@@ -112,19 +112,24 @@ class BasicAutoencoder:
         good_weights = []
         error_epochs = 0
         loop = 0
+        good_weights = self.W
+        if(leaps >= len(self.alphabet)):
+            leaps = len(self.alphabet)-1
+        print("Comienza la ejecución. ", datetime.now())
         for width in range(leaps, len(self.alphabet), leaps):
             loop += 1
             data = self.alphabet[0:width+1]
             error = self.train(data, time_limit)
             if (len(error) > 0 and error[-1] == 0):
-                print("Con ", width+1, "letras, tarda ", len(error), "épocas. ", datetime.now())
+                print("Para aprender ", width+1, "letras, tarda ", len(error), "épocas. ", datetime.now())
                 good_weights = copy.deepcopy(self.W)
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
                 plt.plot(x, error, color=colors[loop%len(colors)])
             else:
-                self.W = good_weights
-                print("Solo pude aprender ", width-leaps+1, " letras.", datetime.now())
+                if(error[-1] > leaps):
+                    self.W = good_weights   # Si tengo más errores que leap, en el peor de los casos tengo menos letras aprendidas
+                print("Solo pude aprender hasta ", width-leaps+1, " letras.", datetime.now())
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
                 plt.plot(x, error, color="red")
@@ -154,8 +159,8 @@ class BasicAutoencoder:
                 if(datetime.now()-start_time > timedelta(minutes=time_limit-1)):
                     lowest_cutoff_error = current_error
                     time_limit += 0.5   # Si el error bajó hasta acá y me queda poco tiempo, dame un poco más
-                learning_rate += 0.001
-            elif(epoch % 100 == 0 and error_over_time[-90] <= current_error):
+                learning_rate += 0.01*learning_rate
+            elif(epoch % 100 == 0 and lowest_cutoff_error <= current_error):
                 learning_rate -= 0.01*learning_rate
             current_error = 0
             np.random.shuffle(data)
