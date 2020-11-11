@@ -122,6 +122,7 @@ class BasicAutoencoder:
 
     def train(self, training_set, time_limit):
         print("My alphabet is of size ", len(training_set))
+        learning_rate = self.alpha
         error_over_time = []
         data = training_set
         self.M = self.total_layers - 1
@@ -135,7 +136,16 @@ class BasicAutoencoder:
         #for epoch in range(epochs):
         start_time = datetime.now()
         while current_error != 0 and datetime.now()-start_time < timedelta(minutes=time_limit):
+            if(len(error_over_time) == 1):
+                lowest_cutoff_error = error_over_time[0]
             epoch += 1
+            if(epoch % 100 == 0 and lowest_cutoff_error > current_error):
+                if(datetime.now()-start_time > timedelta(minutes=time_limit-1)):
+                    lowest_cutoff_error = current_error
+                    time_limit += 0.5   # Si el error bajó hasta acá y me queda poco tiempo, dame un poco más
+                learning_rate += 0.001
+            elif(epoch % 100 == 0 and error_over_time[-90] <= current_error):
+                learning_rate -= 0.01*learning_rate
             current_error = 0
             np.random.shuffle(data)
             for mu in range(len(data)):
@@ -177,7 +187,7 @@ class BasicAutoencoder:
                 for m in range(1, self.M+1):
                     for i in range(self.nodes_per_layer[m]):
                         for j in range(self.nodes_per_layer[m-1]):
-                            delta = self.alpha * self.d[m][i] * self.V[m-1][j]
+                            delta = learning_rate * self.d[m][i] * self.V[m-1][j]
                             self.W[m][i][j] = self.W[m][i][j] + delta
             error_over_time.append(current_error)
         return error_over_time
