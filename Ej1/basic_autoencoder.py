@@ -108,20 +108,31 @@ class BasicAutoencoder:
         return hmi
 
     def progressive_train(self, leaps, time_limit):
+        colors = ["blue", "orange", "green", "pink", "cyan", "purple"]
         good_weights = []
-        for width in range(0, len(self.alphabet), leaps):
+        error_epochs = 0
+        loop = 0
+        for width in range(leaps, len(self.alphabet), leaps):
+            loop += 1
             data = self.alphabet[0:width+1]
             error = self.train(data, time_limit)
             if (len(error) > 0 and error[-1] == 0):
                 print("Con ", width+1, "letras, tarda ", len(error), "épocas. ", datetime.now())
                 good_weights = copy.deepcopy(self.W)
+                x = np.arange(error_epochs, error_epochs+len(error))
+                error_epochs += len(error)
+                plt.plot(x, error, color=colors[loop%len(colors)])
             else:
                 self.W = good_weights
                 print("Solo pude aprender ", width-leaps+1, " letras.", datetime.now())
+                x = np.arange(error_epochs, error_epochs+len(error))
+                error_epochs += len(error)
+                plt.plot(x, error, color="red")
+                plt.show()
                 return
+        plt.show()
 
     def train(self, training_set, time_limit):
-        print("My alphabet is of size ", len(training_set))
         learning_rate = self.alpha
         error_over_time = []
         data = training_set
@@ -244,6 +255,7 @@ class BasicAutoencoder:
         print(main_c)  # chequear bien dsp
 
     def graph(self, data, data_labels):
+        plt.cla()
         self.M = self.total_layers - 1
         index = 0
         latent_values = [[None, None] for i in range(len(data))]
