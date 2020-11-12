@@ -116,15 +116,15 @@ class BasicAutoencoder:
         if(leaps >= len(self.alphabet)):
             leaps = len(self.alphabet)-1
         print("Comienza la ejecución. ", datetime.now())
-        for width in range(leaps-1, len(self.alphabet)+leaps-1, leaps):
+        for width in range(leaps, len(self.alphabet)+leaps, leaps):
             if width > len(self.alphabet):
                 width = len(self.alphabet)
-            print("Entreno para ", width+1, " letras")
+            print("Entreno para ", width, " letras")
             loop += 1
             data = self.alphabet[0:width+1]
             error = self.train(data, time_limit)
             if (len(error) > 0 and error[-1] == 0):
-                print("Para aprender ", width+1, " letras, tardé ", len(error), "épocas. ", datetime.now())
+                print("Para aprender ", width, " letras, tardé ", len(error), "épocas. ", datetime.now())
                 good_weights = copy.deepcopy(self.W)
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
@@ -132,7 +132,7 @@ class BasicAutoencoder:
             else:
                 if(error[-1] > leaps):
                     self.W = good_weights   # Si tengo más errores que leap, en el peor de los casos tengo menos letras aprendidas
-                print("Pude aprender al menos ", width-leaps+1, " letras.", datetime.now())
+                print("Pude aprender al menos ", width-leaps, " letras.", datetime.now())
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
                 plt.plot(x, error, color="red")
