@@ -33,7 +33,7 @@ class BasicAutoencoder:
                  Tengo 1 network => n layers => m nodos ==> [[[]]] triple lista
     """
     def build_network(self):
-        division_factor = 3.4
+        division_factor = 2.5
         initial_count = self.input_layer_size
         node_count = initial_count
 
@@ -116,12 +116,15 @@ class BasicAutoencoder:
         if(leaps >= len(self.alphabet)):
             leaps = len(self.alphabet)-1
         print("Comienza la ejecución. ", datetime.now())
-        for width in range(leaps, len(self.alphabet), leaps):
+        for width in range(leaps-1, len(self.alphabet)+leaps-1, leaps):
+            if width > len(self.alphabet):
+                width = len(self.alphabet)
+            print("Entreno para ", width+1, " letras")
             loop += 1
             data = self.alphabet[0:width+1]
             error = self.train(data, time_limit)
             if (len(error) > 0 and error[-1] == 0):
-                print("Para aprender ", width+1, "letras, tarda ", len(error), "épocas. ", datetime.now())
+                print("Para aprender ", width+1, " letras, tardé ", len(error), "épocas. ", datetime.now())
                 good_weights = copy.deepcopy(self.W)
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
@@ -129,7 +132,7 @@ class BasicAutoencoder:
             else:
                 if(error[-1] > leaps):
                     self.W = good_weights   # Si tengo más errores que leap, en el peor de los casos tengo menos letras aprendidas
-                print("Solo pude aprender hasta ", width-leaps+1, " letras.", datetime.now())
+                print("Pude aprender al menos ", width-leaps+1, " letras.", datetime.now())
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
                 plt.plot(x, error, color="red")
@@ -234,11 +237,11 @@ class BasicAutoencoder:
             for j in range(7):
                 for i in range(5):
                     if(input[i+j*5] > 0): print("X", end = "")
-                    else: print(".", end = "")
+                    else: print(" ", end = "")
                 print("\t", end="")
                 for i in range(5):
                     if(perceptron_output[i+j*5] > 0): print("X", end = "")
-                    else: print(".", end = "")
+                    else: print(" ", end = "")
                 print("")
 
     def pre_process(self, grid):
