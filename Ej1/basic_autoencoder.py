@@ -204,6 +204,10 @@ class BasicAutoencoder:
                     for i in range(self.nodes_per_layer[m]):
                         for j in range(self.nodes_per_layer[m-1]):
                             delta = learning_rate * self.d[m][i] * self.V[m-1][j]
+                            # velocity[m][i][j] = momentum * velocity[m][i][j] + (1 - momentum) * delta
+                            #       El velocity es por arista, arranca en 0 y en este paso se actualiza
+                            # self.W[m][i][j] += velocity
+                            #       Reemplaza la linea de abajo
                             self.W[m][i][j] = self.W[m][i][j] + delta
             error_over_time.append(current_error)
         return error_over_time
