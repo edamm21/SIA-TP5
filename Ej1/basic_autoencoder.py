@@ -107,7 +107,7 @@ class BasicAutoencoder:
             hmi += W[m][i][j] * V[m-1][j]
         return hmi
 
-    def progressive_train(self, leaps, time_limit):
+    def progressive_train(self, leaps, time_limit, epochs=25000):
         colors = ["blue", "orange", "green", "pink", "cyan", "purple"]
         good_weights = []
         error_epochs = 0
@@ -123,7 +123,7 @@ class BasicAutoencoder:
             loop += 1
             data = self.alphabet[0:width+1]
             learned = 0
-            error = self.train(data, time_limit)
+            error = self.train(data, time_limit, epochs)
             if (len(error) > 0 and error[-1] == 0):
                 learned = width
                 print("Para aprender ", width, " letras, tardé ", len(error), "épocas. ", datetime.now())
@@ -133,14 +133,14 @@ class BasicAutoencoder:
                 plt.plot(x, error, color=colors[loop%len(colors)])
             else:
                 if(error[-1] > leaps):
-                    print("No logré aprender todas las nuevas letras, pero aprendí algo")
+                    print("El error entrenando con las nuevas letras es demasiado grande, me quedo con lo que había aprendido antes")
                     self.W = copy.deepcopy(good_weights)   # Si tengo más errores que leap, es posible que tenga menos letras aprendidas
                 if len(data) < len(self.alphabet):
                     print("Probando entrenar con el alfabeto entero. ", datetime.now())
-                    aux_error = self.train(self.alphabet, time_limit)
+                    aux_error = self.train(self.alphabet, time_limit, epochs)
                     if(aux_error[-1] > len(self.alphabet)-learned):
                         print("El error entrenando con el alfabeto entero es demasiado grande, me quedo con lo que había aprendido antes")
-                        self.W = good_weights
+                        self.W = copy.deepcopy(good_weights)
                     else:
                         error = aux_error
                 print("Pude aprender al menos ", width-leaps, " letras.", datetime.now())
@@ -151,7 +151,7 @@ class BasicAutoencoder:
                 return
         plt.show()
 
-    def train(self, training_set, time_limit):
+    def train(self, training_set, time_limit=100, epochs=25000):
         learning_rate = self.alpha
         error_over_time = []
         data = training_set
@@ -165,7 +165,7 @@ class BasicAutoencoder:
         current_error = 1
         #for epoch in range(epochs):
         start_time = datetime.now()
-        while current_error != 0 and datetime.now()-start_time < timedelta(minutes=time_limit):
+        while current_error != 0 and datetime.now()-start_time < timedelta(minutes=time_limit) and epoch < epochs:
             if(len(error_over_time) == 1):
                 lowest_cutoff_error = error_over_time[0]
             epoch += 1
@@ -182,7 +182,7 @@ class BasicAutoencoder:
                 # Paso 2 (V0 tiene los ejemplos iniciales)
                 self.V[0][0] = 1.0  # bias
                 for k in range(len(data[0])):
-                    self.V[0][k+1] = data[mu][k] if not self.denoising else self.generate_noise(data[mu][k])
+                    self.V[0][k+1] = data[mu][k] #if not self.denoising else self.generate_noise(data[mu][k])
 
                 # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m. Salteo el nodo bias)
                 for m in range(1, self.M):
@@ -232,7 +232,7 @@ class BasicAutoencoder:
         for input in test_data:
             print("\n\n")
             for k in range(len(input)):
-                self.V[0][k+1] = input[k]
+                self.V[0][k+1] = input[k] if not self.denoising else self.generate_noise(input[k])
             for m in range(1, self.M):
                 for i in range(1, self.nodes_per_layer[m]):
                     hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
@@ -247,7 +247,7 @@ class BasicAutoencoder:
             #Print the original letter
             for j in range(7):
                 for i in range(5):
-                    if(input[i+j*5] > 0): print("X", end = "")
+                    if(self.V[0][1+i+j*5] > 0): print("X", end = "")
                     else: print(" ", end = "")
                 print("\t", end="")
                 for i in range(5):
