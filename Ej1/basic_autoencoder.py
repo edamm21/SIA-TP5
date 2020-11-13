@@ -216,7 +216,7 @@ class BasicAutoencoder:
         return error_over_time
 
     def test(self, test_data):
-        print("\n\nExpectation / Reality")
+        print("\n\nInput / Decoded Output")
         self.M = self.total_layers - 1
         for input in test_data:
             print("\n\n")
@@ -292,3 +292,27 @@ class BasicAutoencoder:
         #self.get_pca()
         plt.grid()
         plt.show()
+
+    def decode(self, a, b):
+        self.M = self.total_layers - 1
+        self.V[math.floor(self.total_layers/2)][1] = a
+        self.V[math.floor(self.total_layers/2)][2] = b
+        for m in range(math.floor(self.total_layers/2)+1, self.M):
+            for i in range(1, self.nodes_per_layer[m]):
+                hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
+                self.V[m][i] = self.g(hmi)
+        for i in range(0, self.nodes_per_layer[self.M]):
+            hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
+            self.V[self.M][i] = self.g(hMi)
+        perceptron_output = self.V[self.M]
+        for bit in range(len(perceptron_output)):
+            if(perceptron_output[bit] > 0): perceptron_output[bit] = 1
+            else: perceptron_output[bit] = -1
+        #Print the resulting letter
+        print("Decoding complete:")
+        for j in range(7):
+            for i in range(5):
+                if(perceptron_output[i+j*5] > 0): print("X", end = "")
+                else: print(" ", end = "")
+            print("")
+        print("\n")
