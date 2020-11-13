@@ -1,0 +1,62 @@
+EJ: 1a | font2 | sin mom
+Aprendiendo de a 2 letras, con 2 min de tiempo
+division_factor = 3.4 => 5 capas 36->11->3->11->35 (incluyendo bias)
+1era: 19 letras
+2da: 15
+3era: 17
+--------------------------------------------------------------------------------
+EJ: 1a | font2 | sin mom
+Aprendiendo de a 2 letras, con 2 min de tiempo
+division_factor = 3 => 7 capas 36->12->4->3->4->12->35 (incluyendo bias)
+1era: 7 letras
+2da: 17
+3era: 21
+--------------------------------------------------------------------------------
+EJ: 1a | font2 | sin mom
+Aprendiendo de a 5 letras, con 2 min de tiempo
+division_factor = 3.4 => 5 capas 36->11->3->11->35 (incluyendo bias)
+1era: 11 letras
+2da: 21
+3era: 21
+-------------------------------------------------------------------------------
+EJ: 1a | font2 | con mom 0.75
+Aprendiendo de a 2 letras, con 2 min de tiempo
+division_factor = 3.4 => 5 capas 36->11->3->11->35 (incluyendo bias)
+1era: 9 letras
+2da: 23
+3era: 23
+--------------------------------------------------------------------------------
+EJ: 1a | font2 | con mom 0.75
+Aprendiendo de a 2 letras, con 2 min de tiempo
+division_factor = 3 => 7 capas 36->12->4->3->4->12->35 (incluyendo bias)
+1era: 17 letras
+2da: 19
+3era: 13
+--------------------------------------------------------------------------------
+EJ: 1a | font2 | con mom 0.75
+Aprendiendo de a 5 letras, con 2 min de tiempo
+division_factor = 3.4 => 5 capas 36->11->3->11->35 (incluyendo bias)
+1era: 6 letras
+2da: 21
+3era: 21
+-------------------------------------------------------------------------------
+EJ: 1a | font2 | con mom 0.5
+Aprendiendo de a 2 letras, con 2 min de tiempo
+division_factor = 3.4 => 5 capas 36->11->3->11->35 (incluyendo bias)
+1era: 19 letras
+2da: 21
+3era: 13
+--------------------------------------------------------------------------------
+EJ: 1a | font2 | con mom 0.5
+Aprendiendo de a 2 letras, con 2 min de tiempo
+division_factor = 3 => 7 capas 36->12->4->3->4->12->35 (incluyendo bias)
+1era: 21 letras
+2da: 13
+3era: 17
+--------------------------------------------------------------------------------
+EJ: 1a | font2 | con mom 0.5
+Aprendiendo de a 5 letras, con 2 min de tiempo
+division_factor = 3.4 => 5 capas 36->11->3->11->35 (incluyendo bias)
+1era: Solo pudo aprender 21 letras
+2da: 21
+3era: 16

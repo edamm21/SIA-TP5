@@ -1,5 +1,7 @@
 {
     "EJ": "1a",
     "FONT": 2,
-    "NOISE_PROBABILITY": 0.5
+    "NOISE_PROBABILITY": 0.5,
+    "WITH_MOMENTUM": "false",
+    "MOMENTUM": 0.75
 }

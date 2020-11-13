@@ -11,8 +11,10 @@ import statistics
 
 class BasicAutoencoder:
 
-    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5):
+    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5, with_momentum=False, momentum=0.0):
         self.alphabet = alphabet
+        self.with_momentum = with_momentum
+        self.momentum = momentum
         self.noise_probability = probability
         self.denoising = denoising
         self.input_layer_size = len(alphabet[0]) # del tamaño de las entradas del "alfabeto"
@@ -53,6 +55,8 @@ class BasicAutoencoder:
             print("Capa", i, ": ", self.nodes_per_layer[i], "Nodos")
             self.V.append([0.0 for j in range(self.nodes_per_layer[i])])
         self.initialize_weights()
+        if self.with_momentum:
+            self.initialize_velocities()
 
 
     """
@@ -69,6 +73,18 @@ class BasicAutoencoder:
         for layer in range(self.M):
             w = np.random.rand(self.nodes_per_layer[layer+1], self.nodes_per_layer[layer]) - 0.5
             self.W.append(w)
+        print(np.shape(self.W))
+
+    """
+        Velocities: matriz de misma dimension que weights, acumulando una variable de velocidad de incremento/decremento de
+                    la taza de aprendizaje para optimizar.
+    """
+    def initialize_velocities(self):
+        self.velocities = []
+        self.velocities.append(np.zeros((0,0)))
+        for layer in range(self.M):
+            self.velocities.append(np.zeros((self.nodes_per_layer[layer+1], self.nodes_per_layer[layer])))
+        print(np.shape(self.velocities))
 
     def generate_noise(self, input_data):
         data = input_data
@@ -204,11 +220,13 @@ class BasicAutoencoder:
                     for i in range(self.nodes_per_layer[m]):
                         for j in range(self.nodes_per_layer[m-1]):
                             delta = learning_rate * self.d[m][i] * self.V[m-1][j]
-                            # velocity[m][i][j] = momentum * velocity[m][i][j] + (1 - momentum) * delta
-                            #       El velocity es por arista, arranca en 0 y en este paso se actualiza
-                            # self.W[m][i][j] += velocity
-                            #       Reemplaza la linea de abajo
-                            self.W[m][i][j] = self.W[m][i][j] + delta
+                            if self.with_momentum:
+                                # El velocity es por arista, arranca en 0 y en este paso se actualiza
+                                self.velocities[m][i][j] = self.momentum * self.velocities[m][i][j] + (1 - self.momentum) * delta
+                                # Reemplaza la linea de abajo
+                                self.W[m][i][j] += self.velocities[m][i][j]
+                            else:
+                                self.W[m][i][j] = self.W[m][i][j] + delta
             error_over_time.append(current_error)
         return error_over_time
 
