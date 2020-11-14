@@ -1,8 +1,9 @@
 {
     "EJ": "1a",
-    "FONT": 2,
+    "FONT": 3,
     "NOISE_PROBABILITY": 0.01,
     "LETTERS_PER_STAGE": 5,
-    "MINUTES_PER_STAGE": 5,
-    "MAX_EPOCHS_PER_STAGE": 25000
+    "MINUTES_PER_STAGE": 3,
+    "MAX_EPOCHS_PER_STAGE": 10000,
+    "DENOISING": true
 }

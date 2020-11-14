@@ -50,7 +50,8 @@ class BasicAutoencoder:
         self.nodes_per_layer[math.floor(self.total_layers/2)] = 3               # Dos de valor, uno para el bias
         self.nodes_per_layer[-1] -= 1                                           # Capa de salida no lleva bias
         for i in range(self.total_layers):
-            print("Capa", i, ": ", self.nodes_per_layer[i], "Nodos")
+            number = self.nodes_per_layer[i]-1 if i != self.total_layers-1 else self.nodes_per_layer[i]
+            print("Capa", i, ": ", number, "Nodos")
             self.V.append([0.0 for j in range(self.nodes_per_layer[i])])
         self.initialize_weights()
 
@@ -114,36 +115,31 @@ class BasicAutoencoder:
         loop = 0
         good_weights = self.W
         if(leaps >= len(self.alphabet)):
-            leaps = len(self.alphabet)-1
-        print("Comienza la ejecución. ", datetime.now())
-        for width in range(leaps, len(self.alphabet)+leaps, leaps):
+            leaps = len(self.alphabet)
+        print(datetime.now(), "\tComienza la ejecución")
+        for width in range(leaps-1, len(self.alphabet)+leaps, leaps):
             if width > len(self.alphabet):
                 width = len(self.alphabet)
-            print("Entreno para ", width, " letras")
-            loop += 1
             data = self.alphabet[0:width+1]
+            print("Entreno para ", len(data), " letras")
+            loop += 1
             learned = 0
-            error = self.train(data, time_limit, epochs)
+            error, lowest_error = self.train(data, time_limit, epochs)
             if (len(error) > 0 and error[-1] == 0):
-                learned = width
-                print("Para aprender ", width, " letras, tardé ", len(error), "épocas. ", datetime.now())
+                learned = len(data)
+                print(datetime.now(), "\tAprendí ", len(data), " letras")
                 good_weights = copy.deepcopy(self.W)
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
                 plt.plot(x, error, color=colors[loop%len(colors)])
             else:
-                if(error[-1] > leaps):
-                    print("El error entrenando con las nuevas letras es demasiado grande, me quedo con lo que había aprendido antes")
-                    self.W = copy.deepcopy(good_weights)   # Si tengo más errores que leap, es posible que tenga menos letras aprendidas
+                self.W = copy.deepcopy(good_weights)
                 if len(data) < len(self.alphabet):
-                    print("Probando entrenar con el alfabeto entero. ", datetime.now())
-                    aux_error = self.train(self.alphabet, time_limit, epochs)
-                    if(aux_error[-1] > len(self.alphabet)-learned):
-                        print("El error entrenando con el alfabeto entero es demasiado grande, me quedo con lo que había aprendido antes")
+                    aux_error, lowest_error = self.train(self.alphabet, time_limit, epochs)
+                    if(lowest_error != 0):
                         self.W = copy.deepcopy(good_weights)
                     else:
                         error = aux_error
-                print("Pude aprender al menos ", width-leaps, " letras.", datetime.now())
                 x = np.arange(error_epochs, error_epochs+len(error))
                 error_epochs += len(error)
                 plt.plot(x, error, color="red")
@@ -162,13 +158,17 @@ class BasicAutoencoder:
         for i in range(1, self.M):
             self.V[i][0] = 1                 # Bias para cada capa
         epoch = 0
-        current_error = 1
+        lowest_error = 100000
+        current_error = 100000
         #for epoch in range(epochs):
         start_time = datetime.now()
         while current_error != 0 and datetime.now()-start_time < timedelta(minutes=time_limit) and epoch < epochs:
             if(len(error_over_time) == 1):
                 lowest_cutoff_error = error_over_time[0]
             epoch += 1
+            if(lowest_error > current_error):
+                best_weights = copy.deepcopy(self.W)
+                lowest_error = current_error
             if(epoch % 100 == 0 and lowest_cutoff_error > current_error):
                 if(datetime.now()-start_time > timedelta(minutes=time_limit-1)):
                     lowest_cutoff_error = current_error
@@ -182,7 +182,7 @@ class BasicAutoencoder:
                 # Paso 2 (V0 tiene los ejemplos iniciales)
                 self.V[0][0] = 1.0  # bias
                 for k in range(len(data[0])):
-                    self.V[0][k+1] = data[mu][k] #if not self.denoising else self.generate_noise(data[mu][k])
+                    self.V[0][k+1] = data[mu][k] if not self.denoising else self.generate_noise(data[mu][k])
 
                 # Paso 3 (Vi tiene los resultados de cada perceptron en la capa m. Salteo el nodo bias)
                 for m in range(1, self.M):
@@ -224,15 +224,17 @@ class BasicAutoencoder:
                             #       Reemplaza la linea de abajo
                             self.W[m][i][j] = self.W[m][i][j] + delta
             error_over_time.append(current_error)
-        return error_over_time
+        if current_error != 0:
+            self.W = best_weights
+        return error_over_time, lowest_error
 
-    def test(self, test_data):
+    def test(self, test_data, noise=false):
         print("\n\nInput / Decoded Output")
         self.M = self.total_layers - 1
         for input in test_data:
             print("\n\n")
             for k in range(len(input)):
-                self.V[0][k+1] = input[k] if not self.denoising else self.generate_noise(input[k])
+                self.V[0][k+1] = input[k] if not noise else self.generate_noise(input[k])
             for m in range(1, self.M):
                 for i in range(1, self.nodes_per_layer[m]):
                     hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
@@ -267,16 +269,6 @@ class BasicAutoencoder:
         array = array.transpose()
         return list(array)
 
-    def get_pca(self):
-        data = self.alphabet
-        standarized = pd.DataFrame(data=data)
-        correlations = standarized.corr()
-        eigen_values_s, eigen_vectors_s = np.linalg.eig(correlations)
-        pca = PCA()
-        main_c = pca.fit_transform(standarized)
-
-        print(main_c)  # chequear bien dsp
-
     def graph(self, data, data_labels):
         plt.cla()
         self.M = self.total_layers - 1
@@ -299,8 +291,6 @@ class BasicAutoencoder:
             plt.scatter(x, y)
             plt.annotate(data_labels[index], xy=(x,y), textcoords='data')
             index += 1
-        #print(latent_values)
-        #self.get_pca()
         plt.grid()
         plt.show()
 

@@ -18,11 +18,12 @@ if params[0] == '1a':
 
 elif params[0] == '1b':
     font, symbols = get_font(params[1])
-    ba = BasicAutoencoder(font, 500, denoising=True, probability=params[2])
+    ba = BasicAutoencoder(font, 500, denoising=params[6], probability=params[2])
     ba.progressive_train(5, 2)
     font, symbols = get_font(params[1])
     ba.graph(font, symbols)
-    ba.test(font)
+    ba.test(font, noise=true)
+    
 elif params[0] == '2':
     font, symbols = get_font(4)
     ba = BasicAutoencoder(font, 500, denoising=False, probability=params[2])
