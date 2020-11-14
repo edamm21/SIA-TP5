@@ -13,6 +13,8 @@ with open(os.getcwd() + "/config.json") as file:
     with_momentum = data['WITH_MOMENTUM']
     momentum = data['MOMENTUM']
     shuffling = data['ALPHABET_SHUFFLING']
+    division_factor = data['DIVISION_FACTOR']
 
 def get_json_data():
-    return [excercise, font, probability, letters_per_stage, minutes_per_stage, epochs_per_stage, denoising, with_momentum, momentum, shuffling]
+    return [excercise, font, probability, letters_per_stage, minutes_per_stage,
+    epochs_per_stage, denoising, with_momentum, momentum, shuffling, division_factor]

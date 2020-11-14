@@ -11,7 +11,7 @@ import statistics
 
 class BasicAutoencoder:
 
-    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5, with_momentum=False, momentum=0.75):
+    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5, with_momentum=False, momentum=0.75, division_factor=2.5):
         self.alphabet = alphabet
         self.noise_probability = probability
         self.denoising = denoising
@@ -26,7 +26,7 @@ class BasicAutoencoder:
         self.nodes_per_layer = []
         self.with_momentum = with_momentum
         self.momentum = momentum
-        self.build_network()
+        self.build_network(division_factor)
 
     """
         Network: cada nodo es un [layer, value], cada layer tiene la mitad de nodos que la capa anterior,
@@ -34,10 +34,10 @@ class BasicAutoencoder:
                  a la capa de salida con la misma cantidad de nodos que la capa de entrada.
                  Tengo 1 network => n layers => m nodos ==> [[[]]] triple lista
     """
-    def build_network(self):
-        division_factor = 2.5
+    def build_network(self, division_factor):
         initial_count = self.input_layer_size
         node_count = initial_count
+        print("Div factor es ", division_factor)
 
         while node_count > 2:
             self.total_layers += 2
