@@ -4,6 +4,8 @@
     "NOISE_PROBABILITY": 0.01,
     "LETTERS_PER_STAGE": 5,
     "MINUTES_PER_STAGE": 3,
-    "MAX_EPOCHS_PER_STAGE": 100,
-    "DENOISING": true
+    "MAX_EPOCHS_PER_STAGE": 5000,
+    "DENOISING": true,
+    "WITH_MOMENTUM": true,
+    "MOMENTUM": 0.75
 }
