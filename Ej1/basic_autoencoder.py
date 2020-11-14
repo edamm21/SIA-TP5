@@ -123,7 +123,7 @@ class BasicAutoencoder:
             hmi += W[m][i][j] * V[m-1][j]
         return hmi
 
-    def progressive_train(self, leaps, time_limit, epochs=25000):
+    def progressive_train(self, leaps, time_limit, epochs=25000, shuffling=False):
         colors = ["blue", "orange", "green", "pink", "cyan", "purple"]
         plt.grid()
         plt.xlabel('Épocas')
@@ -132,10 +132,12 @@ class BasicAutoencoder:
         error_epochs = 0
         loop = 0
         good_weights = self.W
+        if shuffling:
+            np.random.shuffle(self.alphabet)
         if(leaps >= len(self.alphabet)):
             leaps = len(self.alphabet)
         print(datetime.now(), "\tComienza la ejecución")
-        for width in range(leaps-1, len(self.alphabet)+leaps, leaps):
+        for width in range(leaps-1, len(self.alphabet)+leaps-1, leaps):
             if width > len(self.alphabet):
                 width = len(self.alphabet)
             data = self.alphabet[0:width+1]

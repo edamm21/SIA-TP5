@@ -6,7 +6,7 @@ params = get_json_data()
 if params[0] == '1a':
     font, symbols = get_font(params[1])
     ba = BasicAutoencoder(font, 500, denoising=False, probability=params[2], with_momentum=params[7], momentum=params[8])
-    ba.progressive_train(params[3], params[4], params[5])
+    ba.progressive_train(params[3], params[4], params[5], shuffling=params[9])
     font, symbols = get_font(params[1])
     ba.graph(font, symbols)
     ba.test(font)
@@ -19,7 +19,7 @@ if params[0] == '1a':
 elif params[0] == '1b':
     font, symbols = get_font(params[1])
     ba = BasicAutoencoder(font, 500, denoising=params[6], probability=params[2], with_momentum=params[7], momentum=params[8])
-    ba.progressive_train(5, 2)
+    ba.progressive_train(5, 2, shuffling=params[9])
     font, symbols = get_font(params[1])
     ba.graph(font, symbols)
     ba.test(font, noise=true)
@@ -27,7 +27,7 @@ elif params[0] == '1b':
 elif params[0] == '2':
     font, symbols = get_font(4)
     ba = BasicAutoencoder(font, 500, denoising=False, probability=params[2], with_momentum=params[7], momentum=params[8])
-    ba.progressive_train(5, 2)
+    ba.progressive_train(5, 2, shuffling=params[9])
     font, symbols = get_font(4)
     ba.graph(font, symbols)
     ba.test(font)
