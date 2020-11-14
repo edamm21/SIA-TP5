@@ -110,6 +110,9 @@ class BasicAutoencoder:
 
     def progressive_train(self, leaps, time_limit, epochs=25000):
         colors = ["blue", "orange", "green", "pink", "cyan", "purple"]
+        plt.grid()
+        plt.xlabel('Épocas')
+        plt.ylabel('Pixeles erróneos')
         good_weights = []
         error_epochs = 0
         loop = 0
@@ -228,7 +231,7 @@ class BasicAutoencoder:
             self.W = best_weights
         return error_over_time, lowest_error
 
-    def test(self, test_data, noise=false):
+    def test(self, test_data, noise=False):
         print("\n\nInput / Decoded Output")
         self.M = self.total_layers - 1
         for input in test_data:
