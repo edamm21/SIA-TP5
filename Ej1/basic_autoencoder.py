@@ -84,7 +84,6 @@ class BasicAutoencoder:
         self.velocities.append(np.zeros((0,0)))
         for layer in range(self.M):
             self.velocities.append(np.zeros((self.nodes_per_layer[layer+1], self.nodes_per_layer[layer])))
-        print(np.shape(self.velocities))
 
     def generate_noise(self, input_data):
         data = input_data
@@ -92,15 +91,6 @@ class BasicAutoencoder:
         if p < self.noise_probability:
             data = 1.0 if data == -1.0 else -1.0
         return data
-
-    """
-    def g(self, x):
-        # ReLu
-        return math.log(1.0 + math.exp(x))
-
-    def g_derivative(self, x):
-        return 1.0 / (1.0 + math.exp(x))
-    """
 
     def g(self, x):
         return np.tanh(self.beta * x)
@@ -168,6 +158,8 @@ class BasicAutoencoder:
         plt.show()
 
     def train(self, training_set, time_limit=100, epochs=25000):
+        if self.with_momentum:
+            self.initialize_velocities()
         learning_rate = self.alpha
         error_over_time = []
         data = training_set

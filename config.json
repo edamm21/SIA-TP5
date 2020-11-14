@@ -2,11 +2,11 @@
     "EJ": "1a",
     "FONT": 2,
     "NOISE_PROBABILITY": 0.01,
-    "LETTERS_PER_STAGE": 10,
+    "LETTERS_PER_STAGE": 3,
     "MINUTES_PER_STAGE": 3,
     "MAX_EPOCHS_PER_STAGE": 5000,
     "DENOISING": false,
-    "WITH_MOMENTUM": false,
+    "WITH_MOMENTUM": true,
     "MOMENTUM": 0.75,
     "ALPHABET_SHUFFLING": false,
     "DIVISION_FACTOR": 2
