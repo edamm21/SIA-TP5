@@ -145,7 +145,7 @@ class BasicAutoencoder:
             else:
                 #Estoy mas tonto que antes, hagamos backup
                 print(datetime.now(), "\tAprendí ", learned, "/", len(data), "letras...")
-                print("It's rewind time!\tConozco " good_learned, "/", len(data), "letras")
+                print("It's rewind time!\tConozco ", good_learned, "/", len(data), "letras")
                 self.W = copy.deepcopy(good_weights)
                 plt.plot(x, error, color="red")
         plt.show()
