@@ -1,6 +1,6 @@
 {
     "EJ": "1a",
-    "FONT": 4,
+    "FONT": 2,
     "NOISE_PROBABILITY": 0.01,
     "LETTERS_PER_STAGE": 5,
     "MINUTES_PER_STAGE": 3,
@@ -9,5 +9,6 @@
     "WITH_MOMENTUM": false,
     "MOMENTUM": 0.75,
     "ALPHABET_SHUFFLING": false,
-    "DIVISION_FACTOR": 2
+    "DIVISION_FACTOR": 3,
+    "LEARNING_RATE": 0.05
 }

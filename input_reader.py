@@ -14,6 +14,7 @@ with open(os.getcwd() + "/config.json") as file:
     momentum = data['MOMENTUM']
     shuffling = data['ALPHABET_SHUFFLING']
     division_factor = data['DIVISION_FACTOR']
+    learning_rate = data['LEARNING_RATE']
 
 def get_json_data():
     return [excercise, font, probability, letters_per_stage, minutes_per_stage,

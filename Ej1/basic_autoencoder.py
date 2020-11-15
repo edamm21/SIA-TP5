@@ -11,13 +11,13 @@ import statistics
 
 class BasicAutoencoder:
 
-    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5, with_momentum=False, momentum=0.75, division_factor=2.5):
+    def __init__(self, alphabet, epochs=1, denoising=False, probability=0.5, with_momentum=False, momentum=0.75, division_factor=2.5, learning_rate=0.05):
         self.alphabet = alphabet
         self.noise_probability = probability
         self.denoising = denoising
         self.input_layer_size = len(alphabet[0]) # del tamaño de las entradas del "alfabeto"
         self.epochs = epochs
-        self.alpha = 0.05
+        self.alpha = learning_rate
         self.beta = 0.5
         self.V = []                     # Valor de los nodos [capa, índice]
         self.W = []                     # Pesos [capa destino, nodo dest, nodo origen]
@@ -144,8 +144,8 @@ class BasicAutoencoder:
                 plt.plot(x, error, color=colors[loop%len(colors)])
             else:
                 #Estoy mas tonto que antes, hagamos backup
-                print(datetime.now(), "\tAprendí ", learned, "/", len(data), "letras...")
-                print("It's rewind time!\tConozco ", good_learned, "/", len(data), "letras")
+                print(datetime.now(), "\tAprendí ", learned, "/", len(data), " letras...")
+                print("It's rewind time!\tConozco ", good_learned, "/", len(data), " letras")
                 self.W = copy.deepcopy(good_weights)
                 plt.plot(x, error, color="red")
         plt.show()
