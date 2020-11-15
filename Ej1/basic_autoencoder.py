@@ -117,11 +117,12 @@ class BasicAutoencoder:
         colors = ["blue", "orange", "green", "pink", "cyan", "purple"]
         plt.grid()
         plt.xlabel('Épocas')
-        plt.ylabel('Pixeles erróneos')
+        plt.ylabel('Letras sin aprender')
         good_weights = []
         error_epochs = 0
         loop = 0
         good_weights = self.W
+        good_learned = 0
         if shuffling:
             np.random.shuffle(self.alphabet)
         if(leaps >= len(self.alphabet)):
@@ -133,28 +134,20 @@ class BasicAutoencoder:
             data = self.alphabet[0:width+1]
             print("Entreno para ", len(data), " letras")
             loop += 1
-            learned = 0
-            error, lowest_error = self.train(data, time_limit, epochs)
-            if (len(error) > 0 and error[-1] == 0):
-                learned = len(data)
-                print(datetime.now(), "\tAprendí ", len(data), " letras")
+            error, lowest_error, learned = self.train(data, time_limit, epochs)
+            x = np.arange(error_epochs, error_epochs+len(error))
+            error_epochs += len(error)
+            if (learned >= good_learned):
+                print(datetime.now(), "\tAprendí ", learned, "/", len(data), " letras")
                 good_weights = copy.deepcopy(self.W)
-                x = np.arange(error_epochs, error_epochs+len(error))
-                error_epochs += len(error)
+                good_learned = learned
                 plt.plot(x, error, color=colors[loop%len(colors)])
             else:
+                #Estoy mas tonto que antes, hagamos backup
+                print(datetime.now(), "\tAprendí ", learned, "/", len(data), "letras...")
+                print("It's rewind time!\tConozco " good_learned, "/", len(data), "letras")
                 self.W = copy.deepcopy(good_weights)
-                if len(data) < len(self.alphabet):
-                    aux_error, lowest_error = self.train(self.alphabet, time_limit, epochs)
-                    if(lowest_error != 0):
-                        self.W = copy.deepcopy(good_weights)
-                    else:
-                        error = aux_error
-                x = np.arange(error_epochs, error_epochs+len(error))
-                error_epochs += len(error)
                 plt.plot(x, error, color="red")
-                plt.show()
-                return
         plt.show()
 
     def train(self, training_set, time_limit=100, epochs=25000):
@@ -172,15 +165,12 @@ class BasicAutoencoder:
         epoch = 0
         lowest_error = 100000
         current_error = 100000
-        #for epoch in range(epochs):
+        good_learned = 0
         start_time = datetime.now()
         while current_error != 0 and datetime.now()-start_time < timedelta(minutes=time_limit) and epoch < epochs:
             if(len(error_over_time) == 1):
                 lowest_cutoff_error = error_over_time[0]
             epoch += 1
-            if(lowest_error > current_error):
-                best_weights = copy.deepcopy(self.W)
-                lowest_error = current_error
             if(epoch % 100 == 0 and lowest_cutoff_error > current_error):
                 if(datetime.now()-start_time > timedelta(minutes=time_limit-1)):
                     lowest_cutoff_error = current_error
@@ -188,7 +178,6 @@ class BasicAutoencoder:
                 learning_rate += 0.01*learning_rate
             elif(epoch % 100 == 0 and lowest_cutoff_error <= current_error):
                 learning_rate -= 0.01*learning_rate
-            current_error = 0
             np.random.shuffle(data)
             for mu in range(len(data)):
                 # Paso 2 (V0 tiene los ejemplos iniciales)
@@ -211,8 +200,6 @@ class BasicAutoencoder:
                 result = self.V[self.M]
                 for i in range(0, self.nodes_per_layer[self.M]):
                     result[i] = np.sign(result[i])
-                    if data[mu][i] != result[i]:
-                        current_error += 1
                     hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
                     self.d[self.M][i] = self.g_derivative(hMi)*(data[mu][i] - self.V[self.M][i])
 
@@ -236,10 +223,37 @@ class BasicAutoencoder:
                                 self.W[m][i][j] += self.velocities[m][i][j]
                             else:
                                 self.W[m][i][j] = self.W[m][i][j] + delta
+
+            # Medir error con pesos actuales
+            learned_letters = 0
+            for mu in data:
+                for k in range(len(mu)):
+                    self.V[0][k+1] = mu[k]
+                for m in range(1, self.M):
+                    for i in range(1, self.nodes_per_layer[m]):
+                        hmi = self.h(m, i, self.nodes_per_layer[m-1], self.W, self.V)
+                        self.V[m][i] = self.g(hmi)
+                for i in range(0, self.nodes_per_layer[self.M]):
+                    hMi = self.h(self.M, i, self.nodes_per_layer[self.M-1], self.W, self.V)
+                    self.V[self.M][i] = self.g(hMi)
+                perceptron_output = self.V[self.M]
+                wrong_pixels = 0
+                for bit in range(len(perceptron_output)):
+                    if(perceptron_output[bit] * mu[bit] < 0):
+                        wrong_pixels += 1
+                if(wrong_pixels == 0):
+                    learned_letters += 1
+            current_error = len(data)-learned_letters
             error_over_time.append(current_error)
+            if(current_error < lowest_error):
+                best_weights = copy.deepcopy(self.W)
+                lowest_error = current_error
+                good_learned = learned_letters
+
         if current_error != 0:
-            self.W = best_weights
-        return error_over_time, lowest_error
+            self.W = best_weights # Si no terminé en 0, hacer backup del mejor punto
+            learned_letters = good_learned
+        return error_over_time, lowest_error, learned_letters
 
     def test(self, test_data, noise=False):
         print("\n\nInput / Decoded Output")
