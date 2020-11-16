@@ -137,17 +137,16 @@ class BasicAutoencoder:
             error, lowest_error, learned = self.train(data, time_limit, epochs)
             x = np.arange(error_epochs, error_epochs+len(error))
             error_epochs += len(error)
+            plt.plot(x, error, color=colors[loop%len(colors)])
             if (learned >= good_learned):
                 print(datetime.now(), "\tAprendí ", learned, "/", len(data), " letras")
                 good_weights = copy.deepcopy(self.W)
                 good_learned = learned
-                plt.plot(x, error, color=colors[loop%len(colors)])
             else:
                 #Estoy mas tonto que antes, hagamos backup
                 print(datetime.now(), "\tAprendí ", learned, "/", len(data), " letras...")
                 print("It's rewind time!\tConozco ", good_learned, "/", len(data), " letras")
                 self.W = copy.deepcopy(good_weights)
-                plt.plot(x, error, color="red")
         plt.show()
 
     def train(self, training_set, time_limit=100, epochs=25000):

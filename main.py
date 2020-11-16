@@ -21,7 +21,7 @@ elif params[0] == '1b':
     ba = BasicAutoencoder(font, 500, denoising=params[6], probability=params[2], with_momentum=params[7], momentum=params[8], division_factor=params[10], learning_rate=params[11])
     ba.progressive_train(5, 2, shuffling=params[9])
     font, symbols = get_font(params[1])
-    ba.test(font, noise=true)
+    ba.test(font, noise=True)
     ba.graph(font, symbols)
 
 elif params[0] == '2':
@@ -33,6 +33,7 @@ elif params[0] == '2':
     print("\nEXPERIMENTACIÓN")
     for x in [-1.0, -0.5, 0.0, 0.5, 1.0]:
         for y in [-1.0, -0.5, 0.0, 0.5, 1.0]:
+            print("En (", x, ", ", y, "):")
             ba.decode(x, y)
     ba.graph(font, symbols)
 else:
