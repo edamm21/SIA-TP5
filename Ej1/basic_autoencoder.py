@@ -142,7 +142,7 @@ class BasicAutoencoder:
                 good_weights = copy.deepcopy(self.W)
                 good_learned = learned
             else:
-                #Estoy mas tonto que antes, hagamos backup
+                # Reconozco menos que antes, hagamos backup
                 print(datetime.now(), "\tAprendí ", learned, "/", len(data), " letras...")
                 print("It's rewind time!\tConozco ", good_learned, "/", len(data), " letras")
                 self.W = copy.deepcopy(good_weights)
@@ -206,8 +206,8 @@ class BasicAutoencoder:
                     for i in range(0, self.nodes_per_layer[m-1]):
                         hprevmi = self.h(m-1, i, self.nodes_per_layer[m-2], self.W, self.V)
                         error_sum = 0
-                        for j in range(0, self.nodes_per_layer[m]):                        # Por cada nodo en la capa superior
-                            error_sum += self.W[m][j][i] * self.d[m][j]                    # sumo la rama de aca hasta arriba y multiplico por el error
+                        for j in range(0, self.nodes_per_layer[m]):
+                            error_sum += self.W[m][j][i] * self.d[m][j]
                         self.d[m-1][i] = self.g_derivative(hprevmi) * error_sum
 
                 # Paso 6 (Actualizar pesos)

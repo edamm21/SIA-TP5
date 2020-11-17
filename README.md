@@ -29,12 +29,12 @@ Para configurar el ejercicio 1a, debemos especificar en el archivo ```input.json
 * Con esta configuración se utilizará el dataset 1, con una probabilidad de 1% de que un pixel se introduzca a la red con ruido.
 * El entrenamiento se realizará por etapas, iniciando con 5 letras y reentrenando con 5 adicionales una vez que el error se vuelva nulo o se acabe el tiempo (limitado por 5000 épocas y 3 minutos por etapa, aunque una buena reducción del error puede sumar tiempo adicional).
 * Noise Training habilitará que el input se introduzca a la red con ruido no solo durante el testeo, sino durante el entrenamiento.
-* With Momentum habilitará el uso de momentum al realizar la retropropagación, y Momentum será el valor de la constante a utilizar.
+* With Momentum habilitará el uso de momentum al actualizar los pesos tras realizar la retropropagación, y Momentum será el valor de la constante a utilizar.
 * Alphabet Shuffling determina si el orden del set de entrenamiento es mezclado antes de realizar el entrenamiento. Esto hace que las 5 letras usadas en la primer etapa de entrenamiento sean aleatorias, y no las 5 primeras definidas en el set.
 * Learning Rate es la tasa de aprendizaje inicial.
 * Division factor es la constante a usar para determinar la arquitectura de la red. Sea N la cantidad de pixeles de una letra, la arquitectura será de la forma:
 ```javascript
-	N -> (N+1)/3 -> ( ((N+1)/3) +1)/3 -> ... -> 2 -> ... -> ( ((N+1)/3) +1)/3 -> (N+1)/3 -> N
+	N → (N+1)/3 → ( ((N+1)/3) +1)/3 → ... → 2 → ... → ( ((N+1)/3) +1)/3 → (N+1)/3 → N
  ```
 
  Luego para ejecutar el programa, en la raíz del directorio corremos el siguiente comando:

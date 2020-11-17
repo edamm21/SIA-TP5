@@ -1,14 +1,14 @@
 {
     "EJ": "1a",
-    "FONT": 3,
+    "FONT": 4,
     "NOISE_PROBABILITY": 0.01,
-    "LETTERS_PER_STAGE": 5,
+    "LETTERS_PER_STAGE": 3,
     "MINUTES_PER_STAGE": 3,
     "MAX_EPOCHS_PER_STAGE": 5000,
     "NOISE_TRAINING": false,
     "WITH_MOMENTUM": false,
     "MOMENTUM": 0.75,
     "ALPHABET_SHUFFLING": false,
-    "DIVISION_FACTOR": 2,
+    "DIVISION_FACTOR": 2.5,
     "LEARNING_RATE": 0.05
 }
